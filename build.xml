@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<project basedir="." default="build" name="Quest">
+    <property name="debuglevel" value="source,lines,vars"/>
+	<property name="obj-dir" location="bin" />
+    <property name="build-dir" location="build" />
+    <property name="lib-dir" location="lib" />
+    <property name="src-dir" location="src" />
+    <property name="war-name" value="Quest" />
+    <property environment="env"/>
+    <path id="classpath">
+        <fileset dir="${lib-dir}" includes="**/*.jar" />
+		<fileset file="/usr/share/java/mysql-connector-java.jar"/>
+        <fileset dir="${env.CATALINA_HOME}/lib" includes="**/*.jar" />
+        <fileset dir="${env.AXIS2_HOME}/lib" includes="**/*.jar" />
+        <pathelement location="${obj-dir}"/>
+    </path>
+
+
+    <target name="init">
+		<mkdir dir="${obj-dir}" />
+		<mkdir dir="${lib-dir}" />
+        <mkdir dir="${build-dir}" />
+        <mkdir dir="${build-dir}/WEB-INF" />
+        <mkdir dir="${build-dir}/WEB-INF/classes" />
+    </target>
+
+    <target name="clean">
+        <delete dir="${build-dir}" />
+    </target>
+
+    <target name="compile" depends="init">
+        <echo message="${ant.project.name}: ${ant.file}"/>
+        <javac debug="true" debuglevel="${debuglevel}" includeantruntime="false" srcdir="${src-dir}" destdir="${build-dir}/WEB-INF/classes" includes="**/*.java">
+            <classpath refid="classpath"/>
+        </javac>
+    </target>    
+
+    <target name="build" depends="clean">		
+        <echo message="${ant.project.name}: ${war-name}"/>
+
+        <!-- build the class files first -->
+        <antcall target="compile" />
+
+        <!-- copy necessary files to include in the war file -->
+        <mkdir dir="${build-dir}/WEB-INF/lib" />
+        <copy todir="${build-dir}/WEB-INF/lib" preservelastmodified="true" overwrite="true">
+            <fileset dir="${lib-dir}" />
+        </copy>
+        <copy todir="${build-dir}" preservelastmodified="true" overwrite="true">
+            <fileset dir="WebContents" />
+        </copy>
+	
+        <!-- create the war file -->
+        <jar basedir="${build-dir}" destfile="${build-dir}/${war-name}.war"/>
+    </target>
+	
+	<target name="buildAAR" depends="clean">
+		<echo message="${ant.project.name}: musicVisualizationService.aar"/>
+			
+				<!-- compile the class files first -->
+                <antcall target="compile" />
+
+                <!-- copy necessary files to include in the aar file -->
+                <mkdir dir="${build-dir}/lib" />
+                <copy todir="${build-dir}/lib" preservelastmodified="true" overwrite="true">
+                        <fileset dir="${lib-dir}" />
+                </copy>
+                <mkdir dir="${build-dir}/META-INF" />
+                <copy file="WebContents/META-INF/services.xml" tofile="${build-dir}/META-INF/services.xml" preservelastmodified="true" overwrite="true" />
+                <copy todir="${build-dir}" preservelastmodified="true" overwrite="true">
+                        <fileset dir="${obj-dir}" />
+                </copy>
+
+                <!-- create the war file -->
+                <jar basedir="${build-dir}" destfile="${build-dir}/musicVisualizationService.aar"/>
+		
+	</target>
+
+</project>
